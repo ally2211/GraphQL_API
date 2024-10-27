@@ -1,38 +1,19 @@
 const express = require('express');
-const { ApolloServer } = require('@apollo/server');
-const { expressMiddleware } = require('@apollo/server/express4'); // Updated import
-const { json } = require('body-parser');
-const cors = require('cors');
+const { graphqlHTTP } = require('express-graphql');
+const schema = require('./schema/schema.js');
 
 const app = express();
 
-// Define your type definitions and resolvers
-const typeDefs = `#graphql
-  type Query {
-    hello: String
-  }
-`;
 
-const resolvers = {
-  Query: {
-    hello: () => 'Hello world!',
-  },
-};
+// Set up GraphQL endpoint with the schema
+app.use(
+  '/graphql',
+  graphqlHTTP({
+    schema: schema, // Pass the imported schema here
+    graphiql: true, // Enable GraphiQL interface for testing
+  })
+);
 
-// Initialize Apollo Server
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
+app.listen(4000, () => {
+  console.log('now listening for requests on port 4000');
 });
-
-// Start the server and configure middleware
-async function startServer() {
-  await server.start();
-  app.use('/graphql', cors(), json(), expressMiddleware(server));
-  
-  app.listen(4000, () => {
-    console.log('Server running at http://localhost:4000/graphql');
-  });
-}
-
-startServer();
