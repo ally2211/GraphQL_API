@@ -10,6 +10,14 @@ const TaskType = new GraphQLObjectType({
     title: { type: GraphQLString},
     weight: { type: GraphQLInt },
     description: { type: GraphQLString },
+    projectId: { type: GraphQLID }, // Include projectId to relate to a project
+    project: {
+      type: ProjectType,
+      resolve(parent) {
+        // Find and return the project that matches parent.projectId
+        return _.find(projects, { id: parent.projectId.toString() });
+      },
+    },
   }),
 });
 // ProjectType definition
@@ -20,6 +28,13 @@ const ProjectType = new GraphQLObjectType({
     title: { type: GraphQLString},
     weight: { type: GraphQLInt },
     description: { type: GraphQLString },
+    tasks: {
+      type: new GraphQLList(TaskType), // Correctly specify type as a list of TaskType
+      resolve(parent) {
+        // Filter tasks by projectId that matches parent.id
+        return tasks.filter(task => task.projectId === parent.id);
+        },
+    },
   }),
 });
 const tasks = [
@@ -28,18 +43,21 @@ const tasks = [
     title: 'Create your first webpage',
     weight: 1,
     description: 'Create your first HTML file 0-index.html with: -Add the doctype on the first line (without any comment) -After the doctype, open and close a html tag Open your file in your browser (the page should be blank)',
+    projectId: '1'
   },
     {
     id: '2',
     title: 'Structure your webpage',
     weight: 1,
     description: 'Copy the content of 0-index.html into 1-index.html Create the head and body sections inside the html tag, create the head and body tags (empty) in this order.',
+    projectId: '1'
   },
   {
     id: '3',
     title: 'Learn CSS basics',
     weight: 1,
     description: 'Create a style.css file and link it in your HTML file. Add basic styling like background color and font styles.',
+    projectId: '2'
   }
 ];
 const projects = [
@@ -70,6 +88,13 @@ const RootQuery = new GraphQLObjectType({
         //return _.find(tasks, { id: args.id });
         // Ensure the id matches by converting it to a string
         return _.find(tasks, { id: args.id.toString() });
+      },
+    },
+          // Field to fetch all tasks
+    tasks: {
+      type: new GraphQLList(TaskType),
+      resolve() {
+        return tasks;
       },
     },
     project: {
