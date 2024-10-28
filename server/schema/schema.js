@@ -51,13 +51,6 @@ const tasks = [
     weight: 1,
     description: 'Copy the content of 0-index.html into 1-index.html Create the head and body sections inside the html tag, create the head and body tags (empty) in this order.',
     projectId: '1'
-  },
-  {
-    id: '3',
-    title: 'Learn CSS basics',
-    weight: 1,
-    description: 'Create a style.css file and link it in your HTML file. Add basic styling like background color and font styles.',
-    projectId: '2'
   }
 ];
 const projects = [
