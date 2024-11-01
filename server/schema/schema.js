@@ -1,5 +1,7 @@
-const { GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLID, GraphQLList, GraphQLSchema } = require('graphql');
+const { GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLID, GraphQLList, GraphQLSchema, GraphQLNonNull } = require('graphql');
 const _ = require('lodash');
+const Project = require('../models/project.js'); // Adjust the path as necessary
+const Task = require('../models/task.js'); // Import the Task model if needed
 
 
 // TaskType definition
@@ -106,7 +108,51 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
-// Export the schema
+// Define the Mutation type
+const Mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    addProject: {
+      type: ProjectType,
+      args: {
+        title: { type: new GraphQLNonNull(GraphQLString) }, // Required field
+        weight: { type: new GraphQLNonNull(GraphQLInt) },   // Required field
+        description: { type: new GraphQLNonNull(GraphQLString) }, // Required field
+      },
+      resolve(parent, args) {
+        // Create a new project instance using Mongoose model
+        const project = new Project({
+          title: args.title,
+          weight: args.weight,
+          description: args.description,
+        });
+        // Save to the database and return the result
+        return project.save();
+      },
+    },
+     addTask: {
+      type: TaskType,
+      args: {
+        title: { type: new GraphQLNonNull(GraphQLString) }, // Required field
+        weight: { type: new GraphQLNonNull(GraphQLInt) },    // Required field
+        description: { type: new GraphQLNonNull(GraphQLString) }, // Required field
+        projectId: { type: new GraphQLNonNull(GraphQLID) },  // Required field to link with a project
+      },
+      resolve(parent, args) {
+        const task = new Task({
+          title: args.title,
+          weight: args.weight,
+          description: args.description,
+          projectId: args.projectId, // Associate task with projectId
+        });
+        return task.save(); // Save to the database and return the created task
+      },
+    },
+  },
+});
+
+// Export the schema with both query and mutation
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation: Mutation,
 });
